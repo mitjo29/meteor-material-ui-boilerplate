@@ -18,4 +18,14 @@ then go to http://localhost:3000 to test your application
 
 Add the dependencies :
 
-`meteor npm install --save clsx @material-ui/core @material-ui/icons`
+`meteor npm install --save clsx @material-ui/core @material-ui/icons bcrypt`
+
+`meteor npm install --save react-router-dom`
+
+Add the Account package : 
+
+`meteor add accounts-password`
+
+Add form field validation with Formik
+
+`meteor npm install formik --save`

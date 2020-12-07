@@ -2,9 +2,12 @@ import React from 'react';
 import {
   Box,
   Container,
+  Button,
   Typography,
   makeStyles
 } from '@material-ui/core';
+import Page from '/imports/ui/components/Page';
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,8 +26,13 @@ const useStyles = makeStyles((theme) => ({
 
 const NotFoundView = () => {
   const classes = useStyles();
+  let navigate = useNavigate();
 
   return (
+    <Page
+      className={classes.root}
+      title="404"
+    >
       <Box
         display="flex"
         flexDirection="column"
@@ -51,11 +59,21 @@ const NotFoundView = () => {
             <img
               alt="Under development"
               className={classes.image}
-              src="/images/404.svg"
+              src="/images/undraw_page_not_found_su7k.svg"
             />
+          </Box>
+          <Box textAlign="center">
+          <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate(-2)}
+              >
+                Go back
+              </Button>
           </Box>
         </Container>
       </Box>
+    </Page>
   );
 };
 

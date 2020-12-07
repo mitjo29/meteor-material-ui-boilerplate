@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { useTracker } from 'meteor/react-meteor-data';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -15,7 +15,11 @@ import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Link from '@material-ui/core/Link';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
@@ -23,10 +27,17 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import DashboardIcon from '@material-ui/icons/Dashboard';
-
+import UsersIcon from '@material-ui/icons/People';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
+import Avatar from '@material-ui/core/Avatar';
 import { Copyright } from './components/copyright';
 import AuthMenu from './components/auth';
-
+import {Images} from '/imports/api/images/images';
+import {
+  Outlet
+} from "react-router-dom";
+import DashboardContent from './components/dashboardContent';
+import Users from './Users'
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -106,11 +117,47 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
+  avatar: {
+    cursor: 'pointer',
+    width: 64,
+    height: 64
+  },
+  avatar_mini: {
+    width: 32,
+    height: 32
+  }
 }));
 
 export default function Dashboard() {
     const classes = useStyles();
     const [open, setOpen] = React.useState(true);
+    const {user, avatar, isLoading }  = useTracker(() =>  {
+      let isLoading = true;
+      const noDataAvailable = { users: [], avatar: [], isLoading };
+      if (!Meteor.user()) {
+        return noDataAvailable;
+      }
+      const handler = Meteor.subscribe('users.current');
+      
+      if (!handler.ready()) {
+        return { ...noDataAvailable, isLoading: true };
+      }
+  
+      const subscription = Meteor.subscribe('images.avatar')
+      if (!subscription.ready()) {
+        return { ...noDataAvailable, isLoading: true };
+      }
+      
+      const user = Meteor.users.findOne(
+        {_id: Meteor.userId()
+        }
+      );
+      const avatar = Images.findOne({'meta.objectId': Meteor.userId()});
+      return { user, avatar, isLoading };
+      
+    });
+    const avatarlink = avatar ? Meteor.absoluteUrl() + avatar._downloadRoute + "/" + avatar._collectionName + "/" + avatar._id + "/original/" + avatar._id + "." + avatar.extension : undefined;
+
     const handleDrawerOpen = () => {
       setOpen(true);
     };
@@ -118,7 +165,7 @@ export default function Dashboard() {
       setOpen(false);
     };
     const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
-  
+    
     return (
       <div className={classes.root}>
         <CssBaseline />
@@ -156,13 +203,45 @@ export default function Dashboard() {
               <ChevronLeftIcon />
             </IconButton>
           </div>
+          <Box
+            alignItems="center"
+            display="flex"
+            flexDirection="column"
+            p={2}
+          >
+            <Avatar
+              className={clsx(classes.avatar, !open && classes.avatar_mini)}
+              component={RouterLink}
+              src={avatarlink ? avatarlink : "/images/avatar_male.png"}
+              to="/profile"
+            />
+            {open && <Box><Typography
+              className={classes.name}
+              color="textPrimary"
+              variant="h5"
+            >
+              {user && user.firstName ? user.firstName : ""} {user && user.lastName ? user.lastName : ""}
+            </Typography>
+            <Typography
+              color="textSecondary"
+                variant="body2"
+              > 
+            {user && user.emails[0] ? user.emails[0].address : ""}
+          </Typography></Box>}
+        </Box>
           <Divider />
           <List>
-            <ListItem button>
+            <ListItem button component={RouterLink} to="/">
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
+            </ListItem>
+            <ListItem button component={RouterLink} to="/users">
+              <ListItemIcon>
+                <UsersIcon />
+              </ListItemIcon>
+              <ListItemText primary="Users" />
             </ListItem>
           </List>
           <Divider />
@@ -170,29 +249,12 @@ export default function Dashboard() {
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
-                <Paper className={fixedHeightPaper}>
-                  
-                </Paper>
-              </Grid>
-              {/* Recent Deposits */}
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper className={fixedHeightPaper}>
-                  
-                </Paper>
-              </Grid>
-              {/* Recent Orders */}
-              <Grid item xs={12}>
-                <Paper className={classes.paper}>
-                 
-                </Paper>
-              </Grid>
-            </Grid>
-            <Box pt={4}>
-              <Copyright />
-            </Box>
+          <Router>
+            <Switch >
+              <Route path="/" exact component={DashboardContent} />
+              <Route path="/users" exact component={DashboardContent} />
+            </Switch>
+          </Router>
           </Container>
         </main>
       </div>

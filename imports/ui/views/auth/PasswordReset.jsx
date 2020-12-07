@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import Avatar from '@material-ui/core/Avatar';
@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import LockOutlinedIcon from '@material-ui/icons/Lock';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
@@ -47,35 +47,29 @@ const validationSchema = yup.object({
       .string('Enter your email')
       .email('Enter a valid email')
       .required('Email is required'),
-    password: yup
-      .string('Enter your password')
-      .min(5, 'Password should be of minimum 8 characters length')
-      .required('Password is required'),
   });
 
-const SignIn = () => {
+const PasswordReset = () => {
   const classes = useStyles();
-  const user = useTracker(() => Meteor.user());
-  let history = useHistory();
+  const [requestSent, setRequestSent] = useState(false)
+
   const formik = useFormik({
     initialValues: {
-      email: 'admin@admin.com',
-      password: 'admin',
+      email: ''
     },
     validationSchema: validationSchema,
     onSubmit: (values, { setErrors, setSubmitting }) => {
-        Meteor.loginWithPassword(values.email, values.password, (err) => {
+        Meteor.forgotPassword(values.email, (err) => {
           if(err){
             setSubmitting(false);
             setErrors({login : err.reason});
           }else{
-            console.log("login successful");
             history.push("/");
           }
       })
     },
   });
-  if(user){history.push("/")}
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -84,14 +78,14 @@ const SignIn = () => {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Password reset
         </Typography>
         <Typography
                     align="center"
                     color="error"
                     variant="body1"
                   >
-                    {formik.errors.login}
+                    {formik.errors.success}
         </Typography>
         <form className={classes.form} onSubmit={formik.handleSubmit}>
           <TextField
@@ -109,24 +103,6 @@ const SignIn = () => {
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
           />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            onChange={formik.handleChange}
-            error={formik.touched.password && Boolean(formik.errors.password)}
-            helperText={formik.touched.password && formik.errors.password}
-          />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
           <Button
             type="submit"
             fullWidth
@@ -135,17 +111,12 @@ const SignIn = () => {
             className={classes.submit}
             disabled={formik.isSubmitting}
           >
-            Sign In
+            Send request
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link href="ForgotPassword" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
             <Grid item>
-              <Link href="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
+              <Link href="/signin" variant="body2">
+                {"Already have an account? Sign in"}
               </Link>
             </Grid>
           </Grid>
@@ -158,4 +129,4 @@ const SignIn = () => {
   );
 }
 
-export default SignIn;
+export default PasswordReset;

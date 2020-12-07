@@ -37,7 +37,7 @@ export default function AuthMenu() {
           onClose={handleClose}
           TransitionComponent={Fade}
         >
-          <MenuItem onClick={handleClose}>Profile</MenuItem>
+          <MenuItem component={Link} to="/profile">Profile</MenuItem>
           <MenuItem onClick={handleClose}>My account</MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
@@ -45,7 +45,7 @@ export default function AuthMenu() {
   }else{
     return (<Button
       component={Link}
-      color="primary"
+      color="secondary"
       to="/signin"
     >
       Sign in

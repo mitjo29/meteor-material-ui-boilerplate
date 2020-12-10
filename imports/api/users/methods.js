@@ -13,12 +13,12 @@ Meteor.methods({
     return Accounts.findUserByUSername(username);
   },
   'user.add'(options){
-    var loggedInUser = Meteor.user()
+    const loggedInUser = Meteor.user()
 
-    // if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['admin'])) && user_id != loggedInUser._id) {
-    //   throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
-    // }
-
+    if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
+      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+    }
+    console.log("Creating user: " + JSON.stringify(options));
     check(options, {
       email: String,
       firstName: String, 
@@ -31,14 +31,12 @@ Meteor.methods({
       }
       const user_id = Accounts.createUser({
               email: options.email,
-              firstName: options.firstName,
-              lastName: options.lastName
           });
-      
+      Meteor.users.update(user_id, {$set: {firstName: options.firstName, lastName: options.lastName}})
       //Meteor.users.update({_id: user_id}, {$set:{'emails.0.verified': true}});
       //if (role != false && status != false) {
         //Roles.AddUsersToRoles(user_id, roles);
-        Roles.setUserRoles(user_id, roles);
+        Roles.setUserRoles(user_id, options.roles);
       //}
       return result = "User created successfully";
     //if(user_id) {
@@ -47,6 +45,11 @@ Meteor.methods({
   },
   'user.update'(options, userId){
     console.log("updating: " + JSON.stringify(options));
+    const loggedInUser = Meteor.user()
+    if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
+      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+    }
+
     check(options, {
       email: String,
       firstName: String, 
@@ -91,7 +94,13 @@ Meteor.methods({
     });
   },
   'user.remove' ( user_id){
+    const loggedInUser = Meteor.user()
+    if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
+      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+    }
+    
     check(user_id, String);
+
     Meteor.users.remove({_id: user_id});
   },
   "user.sendEnrollmentEmail"(id){

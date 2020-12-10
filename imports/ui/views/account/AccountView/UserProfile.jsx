@@ -23,7 +23,7 @@ import * as yup from 'yup';
 import { useNavigate } from "react-router-dom";
 import 'react-image-crop/dist/ReactCrop.css';
 import AvatarPicker from '/imports/ui/components/avatarPicker' 
-
+import Avatar from '@material-ui/core/Avatar';
 
 
   const useStyles = makeStyles((theme) => ({
@@ -35,7 +35,8 @@ import AvatarPicker from '/imports/ui/components/avatarPicker'
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    width: 128,
+    height: 128,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
@@ -120,7 +121,7 @@ const UserProfile = (props) => {
           setSubmitting(false);}
           else{
             setSubmitting(false);
-            props.closeDialog(false);
+            props.close(false);
             //navigate(-1);
           }
         });
@@ -129,14 +130,14 @@ const UserProfile = (props) => {
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
-          roles: [values.roles]
+          roles: values.roles
         }, (err) => {
           if(err){setErrors({account : "Account not created : " + err})
           setSubmitting(false);
           }
           else{
             setSubmitting(false);
-            props.closeDialog(false);
+            props.close(false);
             //navigate(-1);
           }
         });
@@ -150,7 +151,11 @@ const UserProfile = (props) => {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
-        <AvatarPicker user={user} />
+        {!user && <Avatar
+              className={classes.avatar}
+              src={"/images/avatar_male.png"}
+            />}
+        {user && <AvatarPicker user={user} />}
         <Typography component="h1" variant="h5">
           { !user ? "New user profile" : user._id === Meteor.userId() ? "My profile" : " User profile" }
         </Typography>
@@ -182,7 +187,6 @@ const UserProfile = (props) => {
             id="lastName"
             label="Lastname "
             name="lastName"
-            autoFocus
             value={formik.values.lastName}
             onChange={formik.handleChange}
             error={formik.touched.lastName && Boolean(formik.errors.lastName)}
@@ -195,13 +199,12 @@ const UserProfile = (props) => {
             id="email"
             label="Email Address"
             name="email"
-            autoFocus
             value={formik.values.email}
             onChange={formik.handleChange}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
           />
-          { (user._id !== Meteor.userId()) && <FormControl className={classes.formControl}>
+          { ((user && user._id !== Meteor.userId()) || !user) && <FormControl className={classes.formControl}>
           <InputLabel htmlFor="user-roles">Roles</InputLabel>
             <Select
               value={formik.values.roles}
@@ -241,7 +244,7 @@ const UserProfile = (props) => {
                 variant="contained"
                 fullWidth
                 color="secondary"
-                onClick={() => props.closeDialog(false)}
+                onClick={() => props.close(false)}
                 className={classes.submit}
                 disabled={formik.isSubmitting}
               >

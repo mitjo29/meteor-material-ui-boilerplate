@@ -12,26 +12,47 @@ import {
   Toolbar,
   makeStyles
 } from '@material-ui/core';
+import Avatar from '@material-ui/core/Avatar';
 import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import InputIcon from '@material-ui/icons/Input';
+import PersonIcon from '@material-ui/icons/Person';
 import Logo from '/imports/ui/components/Logo';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 
 const useStyles = makeStyles(() => ({
   root: {},
   avatar: {
-    width: 60,
-    height: 60
+    width: 32,
+    height: 32
+  },
+  paper : {
+    menu: {
+    border: '1px solid #d3d4d5',
+    }
   }
 }));
 
 const TopBar = ({
   className,
   onMobileNavOpen,
+  user,
   ...rest
 }) => {
   const classes = useStyles();
-  const [notifications] = useState([]);
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <AppBar
@@ -45,18 +66,49 @@ const TopBar = ({
         </RouterLink>
         <Box flexGrow={1} />
         <Hidden mdDown>
-          <IconButton color="inherit">
-            <Badge
-              badgeContent={notifications.length}
-              color="primary"
-              variant="dot"
-            >
-              <NotificationsIcon />
-            </Badge>
+          <IconButton color="inherit" onClick={handleClick}>
+            <Avatar
+                className={classes.avatar}
+                src={user && user.avatar ? user.avatar : "/images/avatar_male.png"}
+            />
           </IconButton>
-          <IconButton color="inherit" onClick={()=> Meteor.logout()}>
-            <InputIcon />
-          </IconButton>
+          
+          <Menu
+            id="user-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            elevation={0}
+            getContentAnchorEl={null}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            PaperProps={{
+              style: {
+                border: '1px solid #d3d4d5',
+              },
+            }}
+          >
+            <MenuItem  component={RouterLink} to="/app/profile">
+              <ListItemIcon>
+                <PersonIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="My Profile"/>
+            </MenuItem>
+            
+            <MenuItem onClick={()=> Meteor.logout()}>
+              <ListItemIcon>
+                <InputIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Log out" />
+            </MenuItem>
+          </Menu>
         </Hidden>
         <Hidden lgUp>
           <IconButton

@@ -20,13 +20,13 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const UserListView = () => {
+const UserListView = (props) => {
   const classes = useStyles();
-  //const [users] = useState(data);
   const [filter, setFilter] = useState({});
+  const { user, isadmin } = props;
   const {users, isLoading }  = useTracker(() =>  {
     let isLoading = true;
-    const noDataAvailable = { users: [], avatar: [], isLoading };
+    const noDataAvailable = { users: [], isLoading };
     if (!Meteor.user()) {
       return noDataAvailable;
     }
@@ -64,7 +64,7 @@ const UserListView = () => {
       <Container maxWidth={false}>
         <Toolbar search={setFilter} users={users} />
         <Box mt={3}>
-          <Results users={users} isLoading={isLoading} />
+          <Results users={users} isLoading={isLoading} isadmin={isadmin} />
         </Box>
       </Container>
     </Page>

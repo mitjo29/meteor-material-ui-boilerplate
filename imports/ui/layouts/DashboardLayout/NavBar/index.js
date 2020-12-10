@@ -12,28 +12,21 @@ import {
   Typography,
   makeStyles
 } from '@material-ui/core';
-import AlertCircleIcon from '@material-ui/icons/Error';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import BarChartIcon from '@material-ui/icons/BarChart';
-import LockIcon from '@material-ui/icons/Lock';
 import SettingsIcon from '@material-ui/icons/Settings';
+import LockIcon from '@material-ui/icons/Lock';
 import ShoppingBagIcon from '@material-ui/icons/ShoppingCart';
 import UserIcon from '@material-ui/icons/Person';
 import UserPlusIcon from '@material-ui/icons/PersonAdd';
 import UsersIcon from '@material-ui/icons/People';
+import IconButton from '@material-ui/core/IconButton';
+import InputIcon from '@material-ui/icons/Input';
+import PersonIcon from '@material-ui/icons/Person';
 
 import { useTracker } from 'meteor/react-meteor-data';
 
 import NavItem from './NavItem';
-
-const useAccount = () => useTracker(() => {
-  const user = Meteor.user()
-  const userId = Meteor.userId()
-  return {
-    user,
-    userId,
-    isLoggedIn: !!userId
-  }
-}, [])
 
 // const user = {
 //   avatar: '/images/avatars/avatar_6.png',
@@ -48,35 +41,30 @@ const items = [
     title: 'Dashboard'
   },
   {
-    href: '/app/users',
-    icon: UsersIcon,
-    title: 'Users'
+    href: '/app/products',
+    icon: ShoppingBagIcon,
+    title: 'Products'
   },
   // {
-  //   href: '/app/products',
-  //   icon: ShoppingBagIcon,
-  //   title: 'Products'
+  //   href: '/app/profile',
+  //   icon: UserIcon,
+  //   title: 'Account'
   // },
-  {
-    href: '/app/profile',
-    icon: UserIcon,
-    title: 'Account'
-  },
   // {
   //   href: '/app/settings',
   //   icon: SettingsIcon,
   //   title: 'Settings'
   // },
-  {
-    href: '/login',
-    icon: LockIcon,
-    title: 'Login'
-  },
-  {
-    href: '/register',
-    icon: UserPlusIcon,
-    title: 'Register'
-  },
+  // {
+  //   href: '/login',
+  //   icon: LockIcon,
+  //   title: 'Login'
+  // },
+  // {
+  //   href: '/register',
+  //   icon: UserPlusIcon,
+  //   title: 'Register'
+  // },
   // {
   //   href: '/404',
   //   icon: AlertCircleIcon,
@@ -84,7 +72,28 @@ const items = [
   // }
 ];
 
-const useStyles = makeStyles(() => ({
+const itemsAdmin = [
+  {
+    href: '/app/users',
+    icon: UsersIcon,
+    title: 'Users'
+  },
+]
+
+const itemsUser = [
+  {
+    href: '/app/profile',
+    icon: SettingsIcon,
+    title: 'Modify my profile'
+  },
+  {
+    href: '/app/changepassword',
+    icon: LockIcon,
+    title: 'Change my password'
+  },
+]
+
+const useStyles = makeStyles((theme) => ({
   mobileDrawer: {
     width: 256
   },
@@ -97,14 +106,20 @@ const useStyles = makeStyles(() => ({
     cursor: 'pointer',
     width: 64,
     height: 64
-  }
+  },
+  userMenu: {
+    '& > *': {
+      margin: theme.spacing(1),
+    },
+  },
 }));
 
-const NavBar = (props, { onMobileClose, openMobile}) => {
+const NavBar = (props) => {
   const classes = useStyles();
   const location = useLocation();
-  const { user, userId, isLoggedIn } = useAccount();
-  const avatarlink = props.avatar ? Meteor.absoluteUrl() + props.avatar._downloadRoute + "/" + props.avatar._collectionName + "/" + props.avatar._id + "/original/" + props.avatar._id + "." + props.avatar.extension : undefined;
+  const {openMobile, onMobileClose, user} = props;
+
+  //const avatarlink = props.avatar ? Meteor.absoluteUrl() + props.avatar._downloadRoute + "/" + props.avatar._collectionName + "/" + props.avatar._id + "/original/" + props.avatar._id + "." + props.avatar.extension : undefined;
   useEffect(() => {
     if (openMobile && onMobileClose) {
       onMobileClose();
@@ -118,16 +133,17 @@ const NavBar = (props, { onMobileClose, openMobile}) => {
       display="flex"
       flexDirection="column"
     >
+      {openMobile && <div>
       <Box
         alignItems="center"
         display="flex"
         flexDirection="column"
-        p={2}
+        p={1}
       >
         <Avatar
           className={classes.avatar}
           component={RouterLink}
-          src={avatarlink}
+          src={user.avatar}
           to="/app/profile"
         />
         <Typography
@@ -143,9 +159,18 @@ const NavBar = (props, { onMobileClose, openMobile}) => {
         >
           {user && user.emails && user.emails[0] ? user.emails[0].address : ""}
         </Typography>
+        <div className={classes.userMenu}>
+          <IconButton color="secondary" aria-label="Modify profile" component={RouterLink} to="/app/profile">
+            <SettingsIcon fontSize="small" />
+          </IconButton>
+          <IconButton aria-label="logout" color="primary" onClick={()=> Meteor.logout()}>
+            <InputIcon fontSize="small" />
+          </IconButton>
+        </div>
       </Box>
       <Divider />
-      <Box p={2}>
+      </div>}
+      <Box p={1}>
         <List>
           {items.map((item) => (
             <NavItem
@@ -157,13 +182,34 @@ const NavBar = (props, { onMobileClose, openMobile}) => {
           ))}
         </List>
       </Box>
+      <Divider />
+      <Box p={1}>
+        <List subheader={<ListSubheader>Administration</ListSubheader>}>
+          {itemsAdmin.map((item) => (
+            <NavItem
+              href={item.href}
+              key={item.title}
+              title={item.title}
+              icon={item.icon}
+            />
+          ))}
+        </List>
+      </Box>
       <Box flexGrow={1} />
+      <Divider />
       <Box
-        p={2}
-        m={2}
-        bgcolor="background.dark"
+        p={1}
       >
-        
+        <List subheader={<ListSubheader>Settings</ListSubheader>}>
+          {itemsUser.map((item) => (
+            <NavItem
+              href={item.href}
+              key={item.title}
+              title={item.title}
+              icon={item.icon}
+            />
+          ))}
+        </List>
       </Box>
     </Box>
   );

@@ -10,17 +10,19 @@ Meteor.publish('users.current', function() {
     return this.ready();
   }
 
-  return Meteor.users.find({_id: this.userId}, {fields: {
+  return [Meteor.users.find({_id: this.userId}, {fields: {
     emails: 1,
     firstName: 1,
     lastName: 1,
     roles: 1,
-  }});
+  }}),
+    Meteor.roles.find({}),
+    Meteor.roleAssignment.find({ 'user._id': this.userId })];
 });
 
 Meteor.publish('users.all', function() {
 
-  var loggedInUser = Meteor.user()
+  var loggedInUser = Meteor.userId()
   if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
   //if (!loggedInUser) {
     return this.ready();

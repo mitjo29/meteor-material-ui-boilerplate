@@ -44,9 +44,9 @@ export default function ProfileDialog(props) {
         onClose={props.closeDialog}
         aria-labelledby="responsive-dialog-title"
       >
-        <DialogTitle id="responsive-dialog-title">Edit profile {props.userId}</DialogTitle>
+        <DialogTitle id="responsive-dialog-title">{user ? "Edit user profile" : "Create new user"} </DialogTitle>
         <DialogContent>
-        <UserProfile user={user} closeDialog={props.closeDialog} />
+        <UserProfile user={user} close={props.closeDialog} />
         </DialogContent>
       </Dialog>
     </div>

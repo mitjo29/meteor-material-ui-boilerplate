@@ -5,7 +5,6 @@ import { Outlet } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core';
 import NavBar from './NavBar';
 import TopBar from './TopBar';
-import {Images} from '/imports/api/images/images';
 import Fade from '@material-ui/core/Fade';
 
 const useStyles = makeStyles((theme) => ({
@@ -40,50 +39,23 @@ const useStyles = makeStyles((theme) => ({
 const DashboardLayout = (props) => {
   const classes = useStyles();
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
-  const {user, avatar, isLoading }  = useTracker(() =>  {
-    let isLoading = true;
-    const noDataAvailable = { users: [], avatar: [], isLoading };
-    if (!Meteor.user()) {
-      return noDataAvailable;
-    }
-    const handler = Meteor.subscribe('users.current');
-    
-    if (!handler.ready()) {
-      return { ...noDataAvailable, isLoading: true };
-    }
-
-    const subscription = Meteor.subscribe('images.avatar')
-    if (!subscription.ready()) {
-      return { ...noDataAvailable, isLoading: true };
-    }
-    
-    const user = Meteor.users.findOne(
-      {_id: Meteor.userId()
-      }
-    );
-    const avatar = Images.findOne({'meta.objectId': Meteor.userId()});
-    return { user, avatar, isLoading };
-    
-  });
-
+  const { user } = props;
   return (
     <div className={classes.root}>
-      <TopBar onMobileNavOpen={() => setMobileNavOpen(true)} />
+      <TopBar onMobileNavOpen={() => setMobileNavOpen(true)} user={user} />
       <NavBar
         onMobileClose={() => setMobileNavOpen(false)}
         openMobile={isMobileNavOpen}
-        user={props.user}
-        avatar={avatar}
+        user={user}
       />
       <div className={classes.wrapper}>
         <div className={classes.contentContainer}>
           <div className={classes.content}>
-            <Fade in={true} ><Outlet /></Fade>
+            <Fade><Outlet /></Fade>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
 export default DashboardLayout;

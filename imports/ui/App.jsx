@@ -1,4 +1,5 @@
 import React from 'react';
+import { Meteor } from 'meteor/meteor';
 import {
   BrowserRouter as Router,
   Redirect,
@@ -12,20 +13,64 @@ import { ThemeProvider } from '@material-ui/core';
 import GlobalStyles from '/imports/ui/components/GlobalStyles';
 import theme from '/imports/ui/theme';
 import routes from '/imports/ui/routes';
+import {Images} from '/imports/api/images/images';
 
 const useAccount = () => useTracker(() => {
-  const user = Meteor.user()
-  const userId = Meteor.userId()
+  let isLoading = true;
+    const noDataAvailable = { user: [], isLoading };
+    if (!Meteor.user()) {
+      return noDataAvailable;
+    }
+    const user = Meteor.user()
+    const userId = Meteor.userId()
+    const handle = Meteor.subscribe('users.current')
+    if (!handle.ready()) {
+      return noDataAvailable;
+    }
+    const isAdmin = Roles.userIsInRole(userId,['Admin']);
+    const subscription = Meteor.subscribe('images.avatar')
+    if (!subscription.ready()) {
+      return { ...noDataAvailable, isLoading: true };
+    }
+    const avatar = Images.findOne({'meta.objectId': userId});
+    if(avatar){
+      user.avatar = avatar.link();
+    }
+
+
+  
+  console.log(isAdmin);
   return {
     user,
     userId,
-    isLoggedIn: !!userId
+    isAdmin,
+    isLoggedIn: !!userId,
+    isLoading : false
   }
 }, [])
 
 const App = () => {
-  const { user, userId, isLoggedIn } = useAccount();
-  const routing = useRoutes(routes(isLoggedIn));
+  const { user, userId, isAdmin, isLoggedIn , isLoading} = useAccount();
+  // const { avatar, isLoading }  = useTracker(() =>  {
+  //   let isLoading = true;
+  //   const noDataAvailable = { avatar: [], isLoading };
+  //   if (!Meteor.user()) {
+  //     return noDataAvailable;
+  //   }
+  //   const subscription = Meteor.subscribe('images.avatar')
+  //   if (!subscription.ready()) {
+  //     return { ...noDataAvailable, isLoading: true };
+  //   }
+  
+  //   const avatar = Images.findOne({'meta.objectId': userId});
+  //   if(avatar){
+  //     user.avatar = avatar.link();
+  //   }
+
+  //   return { avatar, isLoading };
+    
+  // });
+  const routing = useRoutes(routes(isLoggedIn, user, isAdmin, isLoading));
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />

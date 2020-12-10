@@ -21,9 +21,9 @@ import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import getInitials from '/imports/ui/utils/getInitials';
-import {Images} from '/imports/api/images/images';
 import ProfileDialog from '/imports/ui/views/account/AccountView/ProfileDialog';
 import Skeleton from '@material-ui/lab/Skeleton';
+import YesNoDialog from '../../../components/YesNoDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -39,8 +39,8 @@ const Results = ({ className, users, isLoading, ...rest }) => {
   const [page, setPage] = useState(0);
   const [openUserProfile, setOpenUserProfile] = useState(false);
   const [editUser, setEditUser ] = useState({});
-  const [editUserAvatar, setEditUserAvatar ] = useState("");
-  const [editUserRole, setEditUserRole ] = useState("");
+
+  const [openYesNo, setOpenYesNo] = useState(false)
 
   const handleSelectAll = (event) => {
     let newSelectedUserIds;
@@ -90,16 +90,35 @@ const Results = ({ className, users, isLoading, ...rest }) => {
     //setEditUserRole(Roles.getRolesForUser(user));
   }
 
-  const refreshUser = () => {
+  const deleteUser = (user) => {
+    setEditUser(user);
+    setOpenYesNo(true);
 
-  }
+};
+    const handleYes = (id) => {
+      console.log("handle yes");
+      Meteor.call('user.remove', id, (err, res) => {
+        if(err) {
+          setOpenYesNo(false);
+        }else{
+          setOpenYesNo(false);
+        }
+      })
+      
+  };
+
+  const handleNo = () => {
+    console.log("handle no");
+    setOpenYesNo(false);
+  };
 
   return (
     <Card
       className={clsx(classes.root, className)}
       {...rest}
     >
-      <ProfileDialog open={openUserProfile} user={editUser} refreshUser={refreshUser} closeDialog={setOpenUserProfile}/>
+      <ProfileDialog open={openUserProfile} user={editUser} closeDialog={setOpenUserProfile}/>
+      <YesNoDialog open={openYesNo} question={"Do you want to delete : "} handleNo={handleNo} handleYes={handleYes} obj={editUser} />
       <PerfectScrollbar>
         <Box minWidth={1050}>
           <Table>
@@ -180,7 +199,7 @@ const Results = ({ className, users, isLoading, ...rest }) => {
                     {user ? moment(user.createdAt).format('DD/MM/YYYY') : ""}
                   </TableCell>
                   <TableCell>
-                    <IconButton color="secondary" aria-label="delete">
+                    <IconButton color="secondary" aria-label="delete" onClick={() => deleteUser(user)} >
                       <DeleteIcon />
                     </IconButton>
                     <IconButton onClick={() => editUserProfile(user)}  color="primary" aria-label="edit">
@@ -196,7 +215,7 @@ const Results = ({ className, users, isLoading, ...rest }) => {
                       alignItems="center"
                       display="flex"
                     >
-                      <Skeleton variant="circle" className={classes.avatar}/>
+                      <Skeleton variant="circle"/>
                       <Typography
                         color="textPrimary"
                         variant="body1"

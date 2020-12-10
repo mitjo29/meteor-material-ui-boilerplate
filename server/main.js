@@ -5,11 +5,6 @@ import '/imports/api/users/methods.js';
 import '/imports/api/users/server/publications.js';
 import '/imports/api/images/methods.js';
 import '/imports/api/images/server/publications.js';
-import { RotateLeftSharp } from '@material-ui/icons';
-
-function insertLink({ title, url }) {
-  LinksCollection.insert({title, url, createdAt: new Date()});
-}
 
 Meteor.startup(() => {
   Roles.createRole("Admin", {unlessExists: true});
@@ -18,7 +13,7 @@ Meteor.startup(() => {
     const userId = Accounts.createUser({
       username: 'admin',
       firstName: 'My',
-      lastNAme: 'Admin',
+      lastName: 'Admin',
       password: 'admin',
       email: 'admin@admin.com'
     });
@@ -27,6 +22,9 @@ Meteor.startup(() => {
   }
   //publish custom fields for user
   Meteor.publish(null, function() {
-    return Meteor.users.find({_id: this.userId}, {fields: {firstName: 1, lastNAme: 1, emails: 1}});
+    return Meteor.users.find({_id: this.userId}, {fields: {firstName: 1, lastName: 1, emails: 1}});
+  });
+  Meteor.publish(null, function (){
+    return Meteor.roles.find({})
   });
 });

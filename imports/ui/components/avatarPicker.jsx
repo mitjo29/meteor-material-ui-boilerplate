@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import clsx from 'clsx';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -16,7 +17,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import Fab from '@material-ui/core/Fab';
 import { useTracker } from 'meteor/react-meteor-data';
 import Typography from '@material-ui/core/Typography';
-
+import CircularProgress from '@material-ui/core/CircularProgress';
+import green from '@material-ui/core/colors/green';
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
 
@@ -39,10 +41,22 @@ const useStyles = makeStyles((theme) => ({
       //   opacity : 0.5,
       // },
     },
+    wrapper: {
+      margin: theme.spacing(1),
+      position: 'relative',
+    },
+    buttonProgress: {
+      color: green[500],
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      marginTop: -12,
+      marginLeft: -12,
+    },
   }));
 
 export default function AvatarPicker(props) {
-    const classes = useStyles();
+  const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -54,7 +68,16 @@ export default function AvatarPicker(props) {
   const [progress, setProgress] = useState(0);
   const [isHovered, setHover] = useState(false);
   const [cropper, setCropper] = useState();
+  const [cropData, setCropData] = useState("#");
   const [errorUpload, setErrorUpload] = useState();
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: !inProgress,
+  });
+//each time cropData is updated, we upload the image
+  useEffect(()=> {
+    uploadItImages();
+  },[cropData]);
 
   const {user, isLoading }  = useTracker(() =>  {
     let isLoading = true;
@@ -62,6 +85,7 @@ export default function AvatarPicker(props) {
     if (!Meteor.user()) {
       return noDataAvailable;
     }
+    if(!props.user) { return noDataAvailable;} 
     const user = Meteor.users.findOne({'_id': props.user._id});
     const avatar = Images.findOne({'meta.objectId' : user._id});
     if(user && avatar) {user.avatar = avatar.link()} else { user.avatar = null}
@@ -90,24 +114,24 @@ export default function AvatarPicker(props) {
 
   const getCropData = () => {
     if (typeof cropper !== "undefined") {
-      setCropData(cropper.getCroppedCanvas().toDataURL());
+      setCropData(cropper.getCroppedCanvas().toDataURL())
     }
   };
   const deleteAvatar = (userId) => {
     Meteor.call('avatar.remove', userId);
   }
-
+  
   const uploadItImages = () => {
 
-    //console.log(files);
-
-    if (files && files[0]) {
+    if (cropData !== "#") {
       // We upload only one file, in case
       // there was multiple files selected
-        for (var i = 0; i <= files.length - 1; i++) {
           //console.log("uploading file " + 1);
         let uploadInstance = Images.insert({
-          file: files[i],
+          file: cropData, // files[i],
+          isBase64: true, // <— Mandatory
+          fileName: user._id + '.png', // <— Mandatory
+          type: 'image/png',
           meta: {
             objectId: user._id,
             imageType: "avatar",
@@ -139,7 +163,7 @@ export default function AvatarPicker(props) {
           //enqueueSnackbar('Files uploaded successfully', {variant: 'success'});
           // Reset our state for the next file
           setInProgress(false);
-          setInProgress(0)
+          setProgress(0)
           setUploading([])
         })
 
@@ -156,7 +180,6 @@ export default function AvatarPicker(props) {
         });
 
         uploadInstance.start(); // Must manually start the upload
-        }
     }
   }
 
@@ -169,10 +192,27 @@ export default function AvatarPicker(props) {
             flexDirection="column"
             p={2}
           >
-        <Avatar
+        {!inProgress && <Avatar
               className={classes.avatar}
-              src={user && user.avatar ? user.avatar : "/images/avatar_male.png"}
-            />
+              src={user && user.avatar ? user.avatar : cropData ? cropData : "/images/avatar_male.png"}
+            />}
+        {inProgress &&  <Box position="relative" display="inline-flex">
+            <CircularProgress variant="determinate" />
+            <Box
+              top={0}
+              left={0}
+              bottom={0}
+              right={0}
+              position="absolute"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Typography variant="caption" component="div" color="textSecondary">{`${Math.round(
+                progress,
+              )}%`}</Typography>
+            </Box>
+          </Box>}
         {!(user && user.avatar) && 
         <label className={classes.labelImg} htmlFor="upload-photo">
           <input
@@ -210,12 +250,13 @@ export default function AvatarPicker(props) {
             <Cropper
             style={{ height: 400, width: "100%" }}
             initialAspectRatio={1}
+            aspectRatio={1}
             preview=".img-preview"
             src={image}
             viewMode={1}
             guides={true}
-            minCropBoxHeight={10}
-            minCropBoxWidth={10}
+            minCropBoxHeight={100}
+            minCropBoxWidth={100}
             background={false}
             responsive={true}
             autoCropArea={1}
@@ -230,9 +271,18 @@ export default function AvatarPicker(props) {
           <Button autoFocus onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={uploadItImages} color="primary" autoFocus>
-            Upload
-          </Button>
+          <div className={classes.wrapper}>
+            <Button
+              variant="contained"
+              color="primary"
+              className={buttonClassname}
+              disabled={inProgress}
+              onClick={getCropData}
+            >
+              Upload
+            </Button>
+            {inProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </div>
         </DialogActions>
       </Dialog>
     </div>

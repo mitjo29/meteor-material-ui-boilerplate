@@ -93,6 +93,10 @@ const ChangePassword = (props) => {
   });
 
   return (
+    <Page
+      className={classes.root}
+      title="Change my password"
+    >
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
@@ -174,6 +178,7 @@ const ChangePassword = (props) => {
         </form>
       </div>
     </Container>
+    </Page>
   );
 }
 

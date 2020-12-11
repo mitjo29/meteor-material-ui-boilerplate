@@ -20,8 +20,8 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '100%',
     paddingBottom: theme.spacing(3),
     paddingTop: theme.spacing(3),
-    margin : theme.spacing(3)
-  }
+    alignItems: 'center',
+  },
 }));
 
 const Dashboard = () => {

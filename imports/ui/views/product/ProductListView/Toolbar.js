@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -12,6 +12,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import { Search as SearchIcon } from 'react-feather';
+import exportFromJSON from 'export-from-json'
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -23,9 +24,23 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Toolbar = ({ className, ...rest }) => {
+const Toolbar = ({ className, search, products, setDialog, ...rest }) => {
   const classes = useStyles();
+  //const [openProductForm, setOpenProductForm] = useState(false);
+  const [searchField, setSearchField] = useState()
+  handleChange = (event) => {
+    setSearchField(event.target.value);
+    const regex = new RegExp( event.target.value, 'i' );
+    search({$or:[{'name' : {$regex : regex}}, {'description': {$regex : regex}}]});
+  }
 
+  const exportJSON = () => {
+    const data = users
+    const fileName = 'download'
+    const exportType = 'csv'
+    
+    exportFromJSON({ data, fileName, exportType })
+  } 
   return (
     <div
       className={clsx(classes.root, className)}
@@ -38,12 +53,13 @@ const Toolbar = ({ className, ...rest }) => {
         <Button className={classes.importButton}>
           Import
         </Button>
-        <Button className={classes.exportButton}>
+        <Button className={classes.exportButton} onClick={exportJSON} >
           Export
         </Button>
         <Button
           color="primary"
           variant="contained"
+          onClick={() => setDialog(true)}
         >
           Add product
         </Button>
@@ -66,8 +82,10 @@ const Toolbar = ({ className, ...rest }) => {
                     </InputAdornment>
                   )
                 }}
-                placeholder="Search product"
+                //value={searchField}
+                placeholder="Search user"
                 variant="outlined"
+                onChange={handleChange}
               />
             </Box>
           </CardContent>

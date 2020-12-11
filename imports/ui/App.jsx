@@ -36,10 +36,7 @@ const useAccount = () => useTracker(() => {
     if(avatar){
       user.avatar = avatar.link();
     }
-
-
-  
-  console.log(isAdmin);
+    
   return {
     user,
     userId,

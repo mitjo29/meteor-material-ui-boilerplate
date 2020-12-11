@@ -53,7 +53,7 @@ const Sales = ({ className, ...rest }) => {
           barThickness: 12,
           maxBarThickness: 10,
           barPercentage: 0.5,
-          categoryPercentage: 0.5,
+          productPercentage: 0.5,
           ticks: {
             fontColor: theme.palette.text.secondary
           },

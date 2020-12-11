@@ -44,7 +44,7 @@ const ProductCard = ({ className, product, ...rest }) => {
         >
           <Avatar
             alt="Product"
-            src={product.media}
+            src={product.imageProduct}
             variant="square"
           />
         </Box>
@@ -54,7 +54,7 @@ const ProductCard = ({ className, product, ...rest }) => {
           gutterBottom
           variant="h4"
         >
-          {product.title}
+          {product.name}
         </Typography>
         <Typography
           align="center"
@@ -85,7 +85,7 @@ const ProductCard = ({ className, product, ...rest }) => {
               display="inline"
               variant="body2"
             >
-              Updated 2hr ago
+              Created At {product.createdAt.toLocaleDateString()}
             </Typography>
           </Grid>
           <Grid

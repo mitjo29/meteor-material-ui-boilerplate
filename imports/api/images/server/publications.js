@@ -9,23 +9,28 @@ Meteor.publish('files.images.all', function () {
   return Images.find().cursor;
 });
 
-Meteor.publish('files.images', function (id, category) {
+Meteor.publish('files.images', function (id, product) {
   var loggedInUser = true; //Meteor.user()
   if (!loggedInUser) {
     return this.ready();
   }else {
     //return Images.find({}).cursor;
-    return Images.find({'meta.objectId': id, 'meta.imageType': category}).cursor;
+    return Images.find({'meta.objectId': id, 'meta.imageType': product}).cursor;
   }
 
 });
-Meteor.publish('files.category', function (id) {
-  var loggedInUser = true; //Meteor.user()
+Meteor.publish('files.products', function (id) {
+  const loggedInUser = Meteor.user()
   if (!loggedInUser) {
     return this.ready();
   }else {
     //return Images.find({}).cursor;
-    return Images.find({'meta.objectId': id, 'meta.imageType': "category"}).cursor;
+    if(id){
+      return Images.find({'meta.objectId': id, 'meta.imageType': "product"}).cursor;
+    }else{
+      return Images.find({'meta.imageType': "product"}).cursor;
+    }
+    
   }
 
 });

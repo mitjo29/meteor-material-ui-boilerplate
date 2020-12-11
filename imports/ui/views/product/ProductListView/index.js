@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
+import clsx from 'clsx';
 import {
   Box,
   Container,
@@ -8,8 +10,10 @@ import {
 import { Pagination } from '@material-ui/lab';
 import Page from '/imports/ui/components/Page';
 import Toolbar from './Toolbar';
+import ProductDialog from '/imports/ui/views/product/ProductListView/ProductDialog';
 import ProductCard from './ProductCard';
-import data from './data';
+import {ProductsCollection} from '/imports/api/products/products';
+import { Images } from '/imports/api/images/images';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,21 +23,60 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: theme.spacing(3)
   },
   productCard: {
-    height: '100%'
+    height: '100%',
+  },
+  selected: {
+    borderColor: theme.palette.primary.light,
+    borderStyle: "solid",
+    borderWidth: "2px"
   }
 }));
 
 const ProductList = () => {
   const classes = useStyles();
-  const [products] = useState(data);
+  const [filter, setFilter] = useState({});
+  const [openDialogForm, setOpenDialogForm] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState();
+  const [selectedProduct, setSelectedProduct] = useState();
+  const {products, isLoading }  = useTracker(() =>  {
+    let isLoading = true;
+    const noDataAvailable = { products: [], isLoading };
+    if (!Meteor.user()) {
+      return noDataAvailable;
+    }
+    const handler = Meteor.subscribe('products.all');
+    
+    if (!handler.ready()) {
+      return { ...noDataAvailable, isLoading: true };
+    }
 
+    const subscription = Meteor.subscribe('files.products')
+    if (!subscription.ready()) {
+      return { ...noDataAvailable, isLoading: true };
+    }
+    
+    const products = ProductsCollection.find(filter).fetch();
+
+    products.map(product => {
+      let imageProduct = Images.findOne({'meta.objectId' : product._id});
+      if(imageProduct) {product.imageProduct = imageProduct.link()} else { product.imageProduct = null}
+    });
+    return { products, isLoading: false };
+    
+  });
+  const openDialog = (product) => {
+    setSelectedProductId(product._id);
+    setSelectedProduct(product);
+    setOpenDialogForm(true);
+  } 
   return (
     <Page
       className={classes.root}
       title="Products"
     >
       <Container maxWidth={false}>
-        <Toolbar />
+        <Toolbar search={setFilter}  open={openDialogForm} setDialog={setOpenDialogForm} />
+        <ProductDialog open={openDialogForm} setOpenDialogForm={setOpenDialogForm} product={selectedProduct} />
         <Box mt={3}>
           <Grid
             container
@@ -42,13 +85,15 @@ const ProductList = () => {
             {products.map((product) => (
               <Grid
                 item
-                key={product.id}
+                key={product._id}
                 lg={4}
                 md={6}
                 xs={12}
+                onClick={() => setSelectedProductId(product._id)}
+                onDoubleClick={() => openDialog(product)}
               >
                 <ProductCard
-                  className={classes.productCard}
+                  className={clsx(classes.productCard, selectedProductId === product._id ? classes.selected : "")}
                   product={product}
                 />
               </Grid>

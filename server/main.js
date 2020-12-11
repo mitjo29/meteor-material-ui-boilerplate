@@ -5,6 +5,8 @@ import '/imports/api/users/methods.js';
 import '/imports/api/users/server/publications.js';
 import '/imports/api/images/methods.js';
 import '/imports/api/images/server/publications.js';
+import '/imports/api/products/methods.js';
+import '/imports/api/products/server/publications.js';
 
 Meteor.startup(() => {
   Roles.createRole("Admin", {unlessExists: true});

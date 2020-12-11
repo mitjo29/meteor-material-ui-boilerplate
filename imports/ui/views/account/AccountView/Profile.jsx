@@ -13,8 +13,15 @@ import {
     Redirect, useNavigate
   } from "react-router-dom";
 import 'react-image-crop/dist/ReactCrop.css';
-
+import Page from '/imports/ui/components/Page';
   const useStyles = makeStyles((theme) => ({
+    root: {
+      backgroundColor: theme.palette.background.dark,
+      minHeight: '100%',
+      paddingBottom: theme.spacing(3),
+      paddingTop: theme.spacing(3),
+      alignItems: 'center',
+    },
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',
@@ -94,12 +101,17 @@ const Profile = (props) => {
 
   //const avatarlink = avatar ? Meteor.absoluteUrl() + avatar._downloadRoute + "/" + avatar._collectionName + "/" + avatar._id + "/original/" + avatar._id + "." + avatar.extension : undefined;
   return (
+    <Page
+    className={classes.root}
+    title="Edit my profile"
+    >
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
          <UserProfile user={user} close={() => navigate(-1)} />
       </div>
     </Container>
+    </Page>
   );
 }
 

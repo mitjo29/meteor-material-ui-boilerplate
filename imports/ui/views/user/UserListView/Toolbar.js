@@ -12,7 +12,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import { Search as SearchIcon } from 'react-feather';
-import ProfileDialogNew from '/imports/ui/views/account/AccountView/ProfileDialog';
+import ProfileDialog from '/imports/ui/views/account/AccountView/ProfileDialog';
 import exportFromJSON from 'export-from-json'
 
 const useStyles = makeStyles((theme) => ({
@@ -48,7 +48,7 @@ const Toolbar = ({ className, search, users, ...rest }) => {
       className={clsx(classes.root, className)}
       {...rest}
     >
-      <ProfileDialogNew open={openUserProfile} closeDialog={setOpenUserProfile}/>
+      <ProfileDialog open={openUserProfile} closeDialog={setOpenUserProfile}/>
       <Box
         display="flex"
         justifyContent="flex-end"

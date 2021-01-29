@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 
 import Button from '@material-ui/core/Button';
@@ -16,11 +16,13 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from "react-router-dom";
 import 'react-image-crop/dist/ReactCrop.css';
-import ImagePicker from '/imports/ui/components/imagePicker' 
+import ImagePicker from '/imports/ui/components/imagePicker'
+import SaveIcon from '@material-ui/icons/Save';
+import DeleteIcon from '@material-ui/icons/Delete';
+import CancelIcon from '@material-ui/icons/Cancel';
+import YesNoDialog from '../../../components/YesNoDialog';
 
-
-
-  const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
     display: 'flex',
@@ -65,79 +67,105 @@ const MenuProps = {
 };
 
 const validationSchema = yup.object({
-    name: yup
-      .string('Enter your first name')
-      .min(2, 'Firstname should of minimum 2 characters length')
-      .required('Firstname is required'),
-    description: yup
-      .string('Enter your last name')
-      .min(2, 'Lastname should of minimum 2 characters length')
-      .required('Lastname is required')
-  });
+  name: yup
+    .string('Enter your first name')
+    .min(2, 'Firstname should of minimum 2 characters length')
+    .required('Firstname is required'),
+  description: yup
+    .string('Enter your last name')
+    .min(2, 'Lastname should of minimum 2 characters length')
+    .required('Lastname is required')
+});
 
 const ProductForm = (props) => {
   const classes = useStyles();
-  const {product} = props;
+  const { product } = props;
+  const [openYesNo, setOpenYesNo] = useState(false)
   let navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
-      name: product && product.name ? product.name  : '',
-      description: product && product.description ? product.description  : '',
+      name: product && product.name ? product.name : '',
+      description: product && product.description ? product.description : '',
     },
     enableReinitialize: true,
     validationSchema: validationSchema,
     onSubmit: (values, { setErrors, setSubmitting }) => {
       setSubmitting(true);
-      if(product){
+      if (product) {
         const productId = Meteor.call('products.upsert', {
           name: values.name,
           description: values.description,
         }, product._id, (err) => {
-          if(err){setErrors({account : "Product not updated : " + err});
-          setSubmitting(false);}
-          else{
+          if (err) {
+            setErrors({ account: "Product not updated : " + err });
+            setSubmitting(false);
+          }
+          else {
             setSubmitting(false);
             props.close(false);
             //navigate(-1);
           }
         });
-      }else{
+      } else {
         const productId = Meteor.call('products.upsert', {
           name: values.name,
           description: values.description,
         }, (err) => {
-          if(err){setErrors({account : "Product not created : " + err})
-          setSubmitting(false);
+          if (err) {
+            setErrors({ account: "Product not created : " + err })
+            setSubmitting(false);
           }
-          else{
+          else {
             setSubmitting(false);
             props.close(false);
             //navigate(-1);
           }
         });
       }
-      
+
     },
   });
+  const deleteProduct = () => {
+    setOpenYesNo(true);
+
+};
+  const handleYes = (id) => {
+    console.log("handle yes");
+    Meteor.call('products.remove', id, (err, res) => {
+      if(err) {
+        setOpenYesNo(false);
+      }else{
+        setOpenYesNo(false);
+        props.close(false)
+      }
+    })
+    
+};
+
+const handleNo = () => {
+  console.log("handle no");
+  setOpenYesNo(false);
+};
 
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
+      {product && <YesNoDialog open={openYesNo} title={"Delete a product?"} question={"Do you want to delete the product: " + product.name} handleNo={handleNo} handleYes={handleYes} obj={product} />}
       <div className={classes.paper}>
         {product && <ImagePicker collectionId={product._id} imageType={"product"} />}
         <Typography component="h1" variant="h5">
-          { !product ? "New product" : " Edit product" }
+          {!product ? "New product" : " Edit product"}
         </Typography>
         <Typography
-                    align="center"
-                    color="error"
-                    variant="body1"
-                  >
-                    {formik.errors.account}
+          align="center"
+          color="error"
+          variant="body1"
+        >
+          {formik.errors.account}
         </Typography>
         <form className={classes.form} onSubmit={formik.handleSubmit}>
-        <TextField
+          <TextField
             variant="outlined"
             margin="normal"
             fullWidth
@@ -163,33 +191,49 @@ const ProductForm = (props) => {
             helperText={formik.touched.description && formik.errors.description}
           />
           <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                  disabled={formik.isSubmitting}
-                >
-                  {formik.isSubmitting && <CircularProgress size={24} className={classes.buttonProgress} />} Save
-                </Button>
-                
-            </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12} md={4}>
               <Button
                 variant="contained"
                 fullWidth
                 color="secondary"
+                onClick={deleteProduct}
+                className={classes.submit}
+                disabled={formik.isSubmitting}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                className={classes.submit}
+                disabled={formik.isSubmitting}
+                startIcon={<SaveIcon />}
+              >
+                {formik.isSubmitting && <CircularProgress size={24} className={classes.buttonProgress} />} Save
+                </Button>
+                </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                color="default"
                 onClick={() => props.close(false)}
                 className={classes.submit}
                 disabled={formik.isSubmitting}
+                startIcon={<CancelIcon />}
               >
                 Cancel
               </Button>
             </Grid>
+
+
           </Grid>
-          
+
         </form>
       </div>
     </Container>

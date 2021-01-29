@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -11,11 +13,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import UserProfile from '/imports/ui/views/account/AccountView/UserProfile';
 
 const useStyles = makeStyles((theme) => ({
-    // avatarbox: {
-    //   "&:hover $editIcon": {
-    //     display: 'block'
-    //   }
-    // },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
     editIcon: {
       marginTop: 10,
     },
@@ -41,10 +44,15 @@ export default function ProfileDialog(props) {
       <Dialog
         fullScreen={fullScreen}
         open={open}
-        onClose={props.closeDialog}
+        
+        //onClose={props.closeDialog}
         aria-labelledby="responsive-dialog-title"
       >
-        <DialogTitle id="responsive-dialog-title">{user ? "Edit user profile" : "Create new user"} </DialogTitle>
+        <DialogTitle id="responsive-dialog-title">{user ? "Edit user profile" : "Create new user"} 
+        <IconButton aria-label="close" className={classes.closeButton} onClick={props.closeDialog}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
         <UserProfile user={user} close={props.closeDialog} />
         </DialogContent>

@@ -24,6 +24,7 @@ import getInitials from '/imports/ui/utils/getInitials';
 import ProfileDialog from '/imports/ui/views/account/AccountView/ProfileDialog';
 import Skeleton from '@material-ui/lab/Skeleton';
 import YesNoDialog from '../../../components/YesNoDialog';
+import { Images } from '/imports/api/images/images';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -118,7 +119,7 @@ const Results = ({ className, users, isLoading, ...rest }) => {
       {...rest}
     >
       <ProfileDialog open={openUserProfile} user={editUser} closeDialog={setOpenUserProfile}/>
-      <YesNoDialog open={openYesNo} question={"Do you want to delete : "} handleNo={handleNo} handleYes={handleYes} obj={editUser} />
+      <YesNoDialog open={openYesNo} title={"Delete an user?"} question={"Do you want to delete the user: " + editUser.firstName + " " + editUser.lastName + "?"} handleNo={handleNo} handleYes={handleYes} obj={editUser} />
       <PerfectScrollbar>
         <Box minWidth={1050}>
           <Table>
@@ -154,7 +155,9 @@ const Results = ({ className, users, isLoading, ...rest }) => {
             </TableHead>
             <TableBody>
               {!isLoading ? users.slice(0, limit).map((user) => {
-                //const avatar = Images.findOne({'meta.objectId': user._id});
+                const avatar = Images.findOne({'meta.objectId': user._id});
+                const avatarLink = avatar ? avatar.link() :'/images/avatar_male.png' ;
+
                 //const avatarlink = avatar ? Meteor.absoluteUrl() + avatar._downloadRoute + "/" + avatar._collectionName + "/" + avatar._id + "/original/" + avatar._id + "." + avatar.extension : '/images/avatar_male.png';
                 return (
                 <TableRow
@@ -177,7 +180,7 @@ const Results = ({ className, users, isLoading, ...rest }) => {
                     >
                       <Avatar
                         className={classes.avatar}
-                        src={user.avatar}
+                        src={avatarLink ? avatarLink : ''}
                       >
                         {getInitials(user.firstName + ' ' + user.lastName)}
                       </Avatar>

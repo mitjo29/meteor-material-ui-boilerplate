@@ -9,7 +9,7 @@ import {
 import Page from '/imports/ui/components/Page';
 import Results from './Results';
 import Toolbar from './Toolbar';
-import { Images } from '/imports/api/images/images';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,21 +36,22 @@ const UserListView = (props) => {
       return { ...noDataAvailable, isLoading: true };
     }
 
-    const subscription = Meteor.subscribe('images.avatars')
-    if (!subscription.ready()) {
-      return { ...noDataAvailable, isLoading: true };
-    }
+    // const subscription = Meteor.subscribe('images.avatars')
+    // if (!subscription.ready()) {
+    //   return { ...noDataAvailable, isLoading: true };
+    // }
     
     const users = Meteor.users.find(filter).fetch();
     users.map(user => {
       let roles = Roles.getRolesForUser(user._id);
+      console.log(roles);
       user.roles = roles
     })
-    const avatars = Images.find({}).fetch();
-    users.map(user => {
-      let avatar = Images.findOne({'meta.objectId' : user._id});
-      if(avatar) {user.avatar = avatar.link()} else { user.avatar = null}
-    });
+    // const avatars = Images.find({}).fetch();
+    // users.map(user => {
+    //   let avatar = Images.findOne({'meta.objectId' : user._id});
+    //   if(avatar) {user.avatar = avatar.link()} else { user.avatar = null}
+    // });
     return { users, isLoading: false };
     
   });

@@ -58,7 +58,6 @@ const LoginView = () => {
                   setSubmitting(false);
                   setErrors({login : err.reason});
                 }else{
-                  console.log("login successful");
                   navigate('/app/dashboard', { replace: true });
                 }
             })

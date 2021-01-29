@@ -130,7 +130,7 @@ const UserProfile = (props) => {
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
-          roles: values.roles
+          roles: [values.roles]
         }, (err) => {
           if(err){setErrors({account : "Account not created : " + err})
           setSubmitting(false);

@@ -5,10 +5,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { object } from 'yup';
 
 export default function YesNoDialog(props) {
-  const { question, handleNo, open, handleYes, obj } = props;
+  const { title, question, handleNo, open, handleYes, obj } = props;
 
   return (
     <div>
@@ -18,10 +17,10 @@ export default function YesNoDialog(props) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Delete User?</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {question + " " + obj.firstName + " " + obj.lastName + "?"}
+            {question}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

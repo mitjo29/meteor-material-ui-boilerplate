@@ -16,7 +16,7 @@ Meteor.methods({
     const loggedInUser = Meteor.user()
 
     if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
-      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+      throw new Meteor.Error(403, "You don't have permission to add a user")
     }
     console.log("Creating user: " + JSON.stringify(options));
     check(options, {
@@ -46,8 +46,9 @@ Meteor.methods({
   'user.update'(options, userId){
     console.log("updating: " + JSON.stringify(options));
     const loggedInUser = Meteor.user()
+    console.log(Roles.userIsInRole(loggedInUser,['Admin']));
     if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
-      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+      throw new Meteor.Error(403, "You don't have permission to modify this entry")
     }
 
     check(options, {
@@ -96,7 +97,7 @@ Meteor.methods({
   'user.remove' ( user_id){
     const loggedInUser = Meteor.user()
     if ((!loggedInUser || !Roles.userIsInRole(loggedInUser,['Admin']))) {
-      throw new Meteor.Error(403, TAPi18n.__("You don't have permission to modify this entry"))
+      throw new Meteor.Error(403, "You don't have permission to modify this entry")
     }
     
     check(user_id, String);

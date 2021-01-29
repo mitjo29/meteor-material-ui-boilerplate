@@ -7,13 +7,12 @@ import {
   Grid,
   makeStyles
 } from '@material-ui/core';
-import { Pagination } from '@material-ui/lab';
+import TablePagination from '@material-ui/core/TablePagination';
 import Page from '/imports/ui/components/Page';
 import Toolbar from './Toolbar';
 import ProductDialog from '/imports/ui/views/product/ProductListView/ProductDialog';
 import ProductCard from './ProductCard';
 import {ProductsCollection} from '/imports/api/products/products';
-import { Images } from '/imports/api/images/images';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,37 +37,54 @@ const ProductList = () => {
   const [openDialogForm, setOpenDialogForm] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState();
   const [selectedProduct, setSelectedProduct] = useState();
-  const {products, isLoading }  = useTracker(() =>  {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const {products, isLoading, isLoadingPictures, totalProducts }  = useTracker(() =>  {
     let isLoading = true;
-    const noDataAvailable = { products: [], isLoading };
+    let isLoadingPictures = true;
+    const noDataAvailable = { products: [], isLoading, isLoadingPictures };
     if (!Meteor.user()) {
       return noDataAvailable;
     }
     const handler = Meteor.subscribe('products.all');
     
     if (!handler.ready()) {
-      return { ...noDataAvailable, isLoading: true };
+      return { ...noDataAvailable, isLoading: true, isLoadingPictures: true };
     }
-
+    noDataAvailable.isLoading = false
     const subscription = Meteor.subscribe('files.products')
     if (!subscription.ready()) {
-      return { ...noDataAvailable, isLoading: true };
+      return { ...noDataAvailable, isLoadingPictures: true };
     }
-    
-    const products = ProductsCollection.find(filter).fetch();
 
-    products.map(product => {
-      let imageProduct = Images.findOne({'meta.objectId' : product._id});
-      if(imageProduct) {product.imageProduct = imageProduct.link()} else { product.imageProduct = null}
-    });
-    return { products, isLoading: false };
+    const totalProducts = ProductsCollection.find().count();
+    skips = rowsPerPage * (page)
+    const products = ProductsCollection.find(filter, {skip: skips, limit: rowsPerPage}).fetch();
+
+    // products.forEach(product => {
+    //   let imageProduct = Images.findOne({'meta.objectId' : product._id});
+    //   if(imageProduct) {product.imageProduct = imageProduct.link()} else { product.imageProduct = null}
+    // }) //. then(noDataAvailable.isLoadingPictures = false);
+    return { ...noDataAvailable, isLoadingPictures: false, totalProducts, products};
     
   });
+//pagination
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const openDialog = (product) => {
     setSelectedProductId(product._id);
     setSelectedProduct(product);
     setOpenDialogForm(true);
   } 
+console.log(products);
   return (
     <Page
       className={classes.root}
@@ -82,7 +98,7 @@ const ProductList = () => {
             container
             spacing={3}
           >
-            {products.map((product) => (
+            {!isLoading &&  products.map((product) => (
               <Grid
                 item
                 key={product._id}
@@ -95,6 +111,7 @@ const ProductList = () => {
                 <ProductCard
                   className={clsx(classes.productCard, selectedProductId === product._id ? classes.selected : "")}
                   product={product}
+                  isLoadingPictures={isLoadingPictures}
                 />
               </Grid>
             ))}
@@ -105,11 +122,15 @@ const ProductList = () => {
           display="flex"
           justifyContent="center"
         >
-          <Pagination
-            color="primary"
-            count={3}
-            size="small"
-          />
+         {!isLoading && <TablePagination
+            component="div"
+            count={totalProducts ? totalProducts : 0}
+            rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+            page={page}
+            onChangePage={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+          />}
         </Box>
       </Container>
     </Page>
